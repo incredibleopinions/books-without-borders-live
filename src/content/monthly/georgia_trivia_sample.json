@@ -1,0 +1,23 @@
+[
+  {
+    "id": "t1",
+    "question": "Georgia is widely considered the birthplace of wine. How old is its winemaking tradition?",
+    "options": ["2,000 years old", "5,000 years old", "8,000 years old", "12,000 years old"],
+    "correctAnswer": 2,
+    "explanation": "Archaeological discoveries of qvevri clay jars containing wine residue in southern Georgia date back to approximately 6000 BC (8,000 years ago)."
+  },
+  {
+    "id": "t2",
+    "question": "What is the name of the iconic traditional Georgian clay vessel used for fermenting and aging wine underground?",
+    "options": ["Khachapuri", "Qvevri", "Kantsi", "Chikartveli"],
+    "correctAnswer": 1,
+    "explanation": "Qvevri are large egg-shaped terracotta vessels buried underground to maintain stable temperatures during fermentation."
+  },
+  {
+    "id": "t3",
+    "question": "The capital city of Georgia, Tbilisi, derived its name from an ancient word meaning what?",
+    "options": ["Warm place", "Mountain fortress", "Green valley", "River crossing"],
+    "correctAnswer": 0,
+    "explanation": "Tbilisi comes from the Old Georgian word 'Tbilisi', meaning 'warm', named after the area's natural hot thermal sulfur springs."
+  }
+]
