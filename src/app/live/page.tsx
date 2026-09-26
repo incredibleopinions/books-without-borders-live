@@ -200,7 +200,7 @@ export default function LiveMemberPortalPage() {
           <div className="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 md:p-8 space-y-6 shadow-2xl">
             <div className="space-y-1">
               <span className="text-xs font-bold uppercase tracking-wider text-teal-400">Icebreaker Stage</span>
-              <h2 className="text-xl font-extrabold text-white">Two Truths & One Fiction</h2>
+              <h2 className="text-xl font-extrabold text-white">Four Facts & One Fiction</h2>
               <p className="text-xs text-slate-400">
                 Click the statement below that you believe is <strong>fiction</strong>!
               </p>

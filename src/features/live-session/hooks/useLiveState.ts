@@ -95,7 +95,7 @@ const DEFAULT_SESSION_DATA: SessionData = {
     lobby: {
       checkIns: {},
     },
-    icebreaker: {
+  icebreaker: {
   country: icebreakerData.country,
   status: 'VOTING',
   facts: icebreakerData.facts,

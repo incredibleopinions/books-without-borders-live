@@ -3,17 +3,27 @@
   "facts": [
     {
       "id": "f1",
-      "text": "Georgia produces wine using 8,000-year-old qvevri clay vessels buried underground.",
+      "text": "Georgia is the birthplace of wine, with archaeological evidence of winemaking dating back 8,000 years.",
       "isFiction": false
     },
     {
       "id": "f2",
-      "text": "The capital city Tbilisi derived its name from ancient thermal hot springs.",
+      "text": "The Georgian language features its own unique 33-letter alphabet that is used nowhere else on Earth.",
       "isFiction": false
     },
     {
       "id": "f3",
-      "text": "Georgia is the only country in Europe where wild tigers still roam freely.",
+      "text": "Locals don't actually call their country 'Georgia', their official name for their homeland is Sakartvelo.",
+      "isFiction": false
+    },
+    {
+      "id": "f4",
+      "text": "Home to Veryovkina, the deepest natural cave on Earth, dropping over 2,200 meters into the ground.",
+      "isFiction": false
+    },
+     {
+      "id": "f5",
+      "text": "The country got its name because it is the world’s largest producer of gold leaf and gold foil.",
       "isFiction": true
     }
   ]

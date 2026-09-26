@@ -7,6 +7,7 @@ import { SessionData, SessionStage } from '@/features/live-session/hooks/useLive
 import defaultNextMonth from '@/content/monthly/next-month.json';
 import defaultDiscussionQuestions from '@/content/monthly/discussion-questions.json';
 import currentMonth from '@/content/monthly/current-month.json';
+import defaultIcebreaker from '@/content/monthly/icebreaker.json';
 
 // Discussion Questions File Importer
 function DiscussionImporter({ sessionId }: { sessionId: string }) {
@@ -331,17 +332,13 @@ const INITIAL_SESSION_DATA: SessionData = {
     lobby: {
       checkIns: {},
     },
-    icebreaker: {
-      country: 'Georgia',
+   icebreaker: {
+      country: defaultIcebreaker.country,
       status: 'VOTING',
-      facts: [
-        { id: 'f1', text: 'Georgia produces wine using 8,000-year-old qvevri clay vessels buried underground.', isFiction: false },
-        { id: 'f2', text: 'The capital city Tbilisi derived its name from ancient thermal hot springs.', isFiction: false },
-        { id: 'f3', text: 'Georgia is the only country in Europe where wild tigers still roam freely.', isFiction: true },
-      ],
+      facts: defaultIcebreaker.facts, // Automatically loaded from icebreaker.json
       memberVotes: {},
     },
-    discussion: {
+     discussion: {
       activeQuestionIndex: 0,
       questions: defaultDiscussionQuestions, // Automatically loaded from discussion-questions.json
       handQueue: [],
