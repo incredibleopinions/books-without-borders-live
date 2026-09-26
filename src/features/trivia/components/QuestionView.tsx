@@ -36,7 +36,7 @@ export function QuestionView({
 
   // Synchronized countdown timer loop driven by server timestamp
   useEffect(() => {
-    if (!questionStartTime || trivia?.status !== 'QUESTION_ACTIVE') {
+    if (!questionStartTime || trivia?.status !== 'IN_PROGRESS') {
       setTimeLeftMs(0);
       return;
     }

@@ -3,7 +3,6 @@
 import { ref, update } from 'firebase/database';
 import { db } from '@/lib/firebase';
 import { SessionData } from '@/features/live-session/hooks/useLiveState';
-import { TriviaImporter } from '@/app/live/admin/TriviaImporter';
 
 export function HostTriviaController({ session }: { session: SessionData }) {
   const sessionId = session.sessionId;

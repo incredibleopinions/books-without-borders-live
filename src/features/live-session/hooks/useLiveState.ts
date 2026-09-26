@@ -12,6 +12,13 @@ export interface Fact {
   isFiction: boolean;
 }
 
+export type TriviaQuestion = {
+  id: string;
+  question: string;
+  options: string[];
+  correctAnswer: number;
+  explanation?: string;
+}
 export interface DiscussionQuestion {
   id: string;
   text: string;
@@ -32,6 +39,7 @@ export interface SessionData {
   featuredAuthor?: string;
   currentStage: SessionStage;
   nextMonth?: NextMonthInfo;
+  connectedMembers?: Record<string, any> | number;
   stageState?: {
     lobby?: {
       checkIns?: Record<string, string>; // memberName -> location
