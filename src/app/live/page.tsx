@@ -398,7 +398,7 @@ export default function LiveMemberPortalPage() {
 
                   <div className="text-center space-y-2">
   <h2 className="text-xl font-bold text-white">
-    How many stars would you give <span className="text-teal-400 italic">{session.featuredBook || "this month's book"}</span>?
+    How many stars would you give <span className="text-teal-400 italic">{session?.featuredBook || "this month's book"}</span>?
   </h2>
   <p className="text-xs text-slate-400">
     Share your rating with the club to calculate our final group score!

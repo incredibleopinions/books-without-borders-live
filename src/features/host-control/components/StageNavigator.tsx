@@ -130,14 +130,14 @@ export function StageNavigator() {
                   key={q.id}
                   onClick={() => startTriviaQuestion(idx)}
                   className={`p-3 text-left rounded-md border transition-all ${
-                    stageState?.discussion?.currentQuestionIndex === idx &&
+                    stageState?.discussion?.activeQuestionIndex === idx &&
                     stageState?.trivia?.status === 'IN_PROGRESS'
                       ? 'bg-emerald-900/40 border-emerald-500 text-emerald-200 font-medium'
                       : 'bg-slate-900 border-slate-700 text-slate-300 hover:border-slate-500'
                   }`}
                 >
                   <div className="text-xs font-bold text-amber-400 mb-1">Trigger Question {idx + 1}</div>
-                  <div className="text-xs truncate">{q.question}</div>
+                  <div className="text-xs truncate">{q.text}</div>
                 </button>
               ))}
             </div>
