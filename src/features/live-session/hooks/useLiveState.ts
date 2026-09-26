@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { ref, onValue } from 'firebase/database';
 import { db } from '@/lib/firebase';
 import icebreakerData from '@/content/monthly/icebreaker.json';
+import discussionData from '@/content/monthly/discussion-questions.json'
 
 export type SessionStage = 'LOBBY' | 'ICEBREAKER' | 'DISCUSSION' | 'TRIVIA' | 'WRAP_UP';
 
@@ -100,15 +101,11 @@ const DEFAULT_SESSION_DATA: SessionData = {
   facts: icebreakerData.facts,
   memberVotes: {},
 },
-    discussion: {
-      activeQuestionIndex: 0,
-      questions: [
-        { id: 'q1', text: 'What were your initial reactions to the author’s narrative structure and tone?' },
-        { id: 'q2', text: 'How did the geographical and historical context shape the characters’ decisions?' },
-        { id: 'q3', text: 'Which key themes resonated most with you personally?' },
-      ],
-      handQueue: [],
-    },
+discussion: {
+  activeQuestionIndex: 0,
+  questions: discussionData,
+  handQueue: [],
+},
     trivia: {
       status: 'IDLE',
       currentQuestionIndex: 0,
