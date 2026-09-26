@@ -314,7 +314,7 @@ export default function LiveMemberPortalPage() {
         {/* 5. WRAP-UP STAGE */}
         {currentStage === 'WRAP_UP' && (() => {
 
-const ratingsObj = session.stageState?.wrapUp?.memberRatings || {};
+  const ratingsObj = session?.stageState?.wrapUp?.memberRatings || {};
   const entries = Object.values(ratingsObj);
   const totalSubmissions = entries.length;
 

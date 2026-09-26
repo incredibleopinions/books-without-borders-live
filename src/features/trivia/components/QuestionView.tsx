@@ -74,7 +74,7 @@ export function QuestionView({
     setHasSubmitted(true);
 
     const timeTakenMs = Date.now() - questionStartTime;
-    const isCorrect = index === currentQuestion.correctAnswerIndex;
+    const isCorrect = index === currentQuestion.correctAnswer;
 
     // Point scoring formula: 1000 max points, scaled down by time taken
     let pointsAwarded = 0;
@@ -98,7 +98,7 @@ export function QuestionView({
       // Update total score in session member list
       if (pointsAwarded > 0) {
         const memberScoreRef = ref(db, `sessions/${sessionId}/connectedMembers/${userId}`);
-        const currentScore = session?.connectedMembers?.[userId]?.score ?? 0;
+        const currentScore = (session?.connectedMembers as Record<string, any>)?.[userId]?.score ?? 0;
         await update(memberScoreRef, {
           score: currentScore + pointsAwarded,
           name: userName,
@@ -133,7 +133,7 @@ export function QuestionView({
         </div>
 
         <h2 className="text-xl md:text-2xl font-bold text-slate-100 pt-2 leading-snug">
-          {currentQuestion.prompt}
+          {currentQuestion.question}
         </h2>
       </div>
 
@@ -141,7 +141,7 @@ export function QuestionView({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {currentQuestion.options.map((optionText: string, index: number) => {
           const isSelected = selectedIndex === index;
-          const isCorrectIndex = index === currentQuestion.correctAnswerIndex;
+          const isCorrectIndex = index === currentQuestion.correctAnswer;
 
           let buttonStyle = 'bg-slate-800 border-slate-700 text-slate-200 hover:border-amber-500/80';
 

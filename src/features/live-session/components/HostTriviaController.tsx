@@ -40,7 +40,6 @@ export function HostTriviaController({ session }: { session: SessionData }) {
   return (
     <div className="space-y-6">
       {/* File Importer */}
-      <TriviaImporter sessionId={sessionId} />
 
       {questions.length > 0 && (
         <div className="bg-slate-800/70 border border-slate-700/80 rounded-2xl p-6 space-y-5 shadow-xl">

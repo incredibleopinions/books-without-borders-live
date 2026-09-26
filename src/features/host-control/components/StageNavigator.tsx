@@ -68,7 +68,7 @@ export function StageNavigator() {
           <div className="space-y-4">
             <p className="text-sm text-slate-300">
               Current Icebreaker Status:{' '}
-              <span className="font-bold text-amber-400">{stageState.icebreaker.status}</span>
+              <span className="font-bold text-amber-400">{stageState?.icebreaker?.status}</span>
             </p>
             <div className="flex gap-3">
               <button
@@ -92,12 +92,12 @@ export function StageNavigator() {
           <div className="space-y-4">
             <p className="text-sm text-slate-300">Select Question to Pin for Members:</p>
             <div className="space-y-2">
-              {stageState.discussion.questions.map((q, idx) => (
+              {stageState?.discussion?.questions.map((q, idx) => (
                 <button
                   key={q.id}
                   onClick={() => setDiscussionQuestion(idx)}
                   className={`w-full text-left p-3 text-sm rounded-md border transition-all ${
-                    stageState.discussion.activeQuestionIndex === idx
+                    stageState?.discussion?.activeQuestionIndex === idx
                       ? 'bg-amber-900/40 border-amber-500 text-amber-200 font-medium'
                       : 'bg-slate-900 border-slate-700 text-slate-300 hover:border-slate-500'
                   }`}
@@ -125,12 +125,12 @@ export function StageNavigator() {
               </button>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              {stageState.trivia.questions.map((q, idx) => (
+              {stageState?.discussion?.questions.map((q, idx) => (
                 <button
                   key={q.id}
                   onClick={() => startTriviaQuestion(idx)}
                   className={`p-3 text-left rounded-md border transition-all ${
-                    stageState.trivia.currentQuestionIndex === idx &&
+                    stageState?.discussion?.currentQuestionIndex === idx &&
                     stageState?.trivia?.status === 'IN_PROGRESS'
                       ? 'bg-emerald-900/40 border-emerald-500 text-emerald-200 font-medium'
                       : 'bg-slate-900 border-slate-700 text-slate-300 hover:border-slate-500'
