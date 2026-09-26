@@ -1,6 +1,5 @@
-// src/lib/firebase.ts
-import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getDatabase } from 'firebase/database';
+import { initializeApp, getApps, getApp } from "firebase/app";
+import { getDatabase, Database } from "firebase/database";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -12,6 +11,10 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Singleton pattern to prevent re-initialization during Next.js Hot Module Reloads
+// Initialize App safely
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
-export const db = getDatabase(app);
+
+// Initialize DB only if databaseURL/projectId is defined
+export const db: Database = firebaseConfig.databaseURL || firebaseConfig.projectId
+  ? getDatabase(app)
+  : (null as unknown as Database);
