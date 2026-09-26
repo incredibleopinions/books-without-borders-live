@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { ref, onValue } from 'firebase/database';
 import { db } from '@/lib/firebase';
+import icebreakerData from '@/content/monthly/icebreaker.json';
 
 export type SessionStage = 'LOBBY' | 'ICEBREAKER' | 'DISCUSSION' | 'TRIVIA' | 'WRAP_UP';
 
@@ -94,15 +95,11 @@ const DEFAULT_SESSION_DATA: SessionData = {
       checkIns: {},
     },
     icebreaker: {
-      country: 'Georgia',
-      status: 'VOTING',
-      facts: [
-        { id: 'f1', text: 'Georgia produces wine using 8,000-year-old qvevri clay vessels buried underground.', isFiction: false },
-        { id: 'f2', text: 'The capital city Tbilisi derived its name from ancient thermal hot springs.', isFiction: false },
-        { id: 'f3', text: 'Georgia is the only country in Europe where wild tigers still roam freely.', isFiction: true },
-      ],
-      memberVotes: {},
-    },
+  country: icebreakerData.country,
+  status: 'VOTING',
+  facts: icebreakerData.facts,
+  memberVotes: {},
+},
     discussion: {
       activeQuestionIndex: 0,
       questions: [
