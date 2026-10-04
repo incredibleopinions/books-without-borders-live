@@ -428,7 +428,6 @@ sessionId: 'active_session',
     author: '',
     meetingDate: '',
     meetingTime: '',
-    meetingZoomLink: '',
   },
   stageState: {
     lobby: {
