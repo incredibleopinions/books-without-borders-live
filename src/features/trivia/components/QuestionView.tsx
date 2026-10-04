@@ -55,11 +55,21 @@ export function QuestionView({
   }, [questionStartTime, trivia?.status, timeLimitMs]);
 
   if (loading) {
-    return <div className="p-8 text-center text-slate-400 animate-pulse">Loading Trivia...</div>;
+    return (
+      <div className="p-8 text-center text-muted font-medium animate-pulse">
+        Loading Trivia...
+      </div>
+    );
   }
 
   if (!trivia || !currentQuestion) {
-    return <div className="p-6 text-center text-slate-400">Waiting for trivia round to begin...</div>;
+    return (
+      <div className="bg-card-bg border border-card-border rounded-2xl p-8 text-center space-y-2 shadow-sm">
+        <span className="text-3xl">🧠</span>
+        <h3 className="text-base font-bold text-primary">Waiting for trivia round...</h3>
+        <p className="text-xs text-muted">The host will launch the next question shortly.</p>
+      </div>
+    );
   }
 
   const isTimeUp = timeLeftMs <= 0;
@@ -110,29 +120,34 @@ export function QuestionView({
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto p-4 space-y-6">
+    <div className="bg-card-bg border border-card-border rounded-2xl p-6 md:p-8 space-y-6 shadow-sm w-full max-w-2xl mx-auto">
       {/* Question Header & Countdown Bar */}
       <div className="space-y-3">
-        <div className="flex justify-between items-center text-xs font-bold tracking-wider text-slate-400 uppercase">
-          <span>
+        <div className="flex justify-between items-center text-xs font-bold tracking-wider uppercase">
+          <span className="text-brand-accent font-mono">
             Question {currentQuestionIndex + 1} of {trivia.questions.length}
           </span>
-          <span className={`font-mono text-sm ${remainingSeconds <= 5 ? 'text-rose-400 animate-ping' : 'text-amber-400'}`}>
+          <span
+            className={`font-mono text-sm font-bold flex items-center gap-1 ${
+              remainingSeconds <= 5 ? 'text-rose-600 animate-bounce' : 'text-brand-accent'
+            }`}
+          >
             ⏱️ {remainingSeconds}s
           </span>
         </div>
 
         {/* Dynamic Timer Bar */}
-        <div className="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden border border-slate-700">
+        <div className="w-full h-2.5 bg-main rounded-full overflow-hidden border border-card-border">
           <div
-            className={`h-full transition-all duration-100 ease-linear ${
-              remainingSeconds <= 5 ? 'bg-rose-500' : 'bg-amber-500'
+            className={`h-full transition-all duration-100 ease-linear rounded-full ${
+              remainingSeconds <= 5 ? 'bg-rose-500' : 'bg-brand-accent'
             }`}
             style={{ width: `${progressPercent}%` }}
           />
         </div>
 
-        <h2 className="text-xl md:text-2xl font-bold text-slate-100 pt-2 leading-snug">
+        {/* Question Text */}
+        <h2 className="text-xl md:text-2xl font-black text-primary pt-2 leading-snug">
           {currentQuestion.question}
         </h2>
       </div>
@@ -143,21 +158,24 @@ export function QuestionView({
           const isSelected = selectedIndex === index;
           const isCorrectIndex = index === currentQuestion.correctAnswer;
 
-          let buttonStyle = 'bg-slate-800 border-slate-700 text-slate-200 hover:border-amber-500/80';
+          // Standard unselected card styling
+          let buttonStyle = 'bg-main border-card-border text-primary hover:border-brand-accent/60 shadow-sm';
 
           if (isTimeUp) {
             // Reveal correct answer when timer expires
             if (isCorrectIndex) {
-              buttonStyle = 'bg-emerald-950/80 border-emerald-500 text-emerald-200 font-bold ring-2 ring-emerald-500';
+              buttonStyle =
+                'bg-emerald-50 border-emerald-500 text-emerald-950 font-bold ring-2 ring-emerald-500 shadow-sm';
             } else if (isSelected && !isCorrectIndex) {
-              buttonStyle = 'bg-rose-950/80 border-rose-500 text-rose-200 opacity-80';
+              buttonStyle = 'bg-rose-50 border-rose-400 text-rose-950 ring-1 ring-rose-400/40';
             } else {
-              buttonStyle = 'bg-slate-900 border-slate-800 text-slate-500 opacity-50';
+              buttonStyle = 'bg-main border-card-border text-muted opacity-50';
             }
           } else if (isSelected) {
-            buttonStyle = 'bg-amber-950/60 border-amber-500 text-amber-200 font-bold ring-2 ring-amber-500/50';
+            buttonStyle =
+              'bg-card-bg border-brand-accent text-primary font-bold ring-2 ring-brand-accent/40 shadow-md';
           } else if (hasSubmitted) {
-            buttonStyle = 'bg-slate-900 border-slate-800 text-slate-500 opacity-60';
+            buttonStyle = 'bg-main border-card-border text-muted opacity-60';
           }
 
           return (
@@ -168,14 +186,22 @@ export function QuestionView({
               className={`p-4 rounded-xl border text-left text-sm md:text-base transition-all duration-200 flex items-center justify-between ${buttonStyle}`}
             >
               <div className="flex items-center gap-3">
-                <span className="w-7 h-7 rounded-lg bg-slate-700/50 text-slate-300 font-mono text-xs font-bold flex items-center justify-center border border-slate-600/50">
+                <span
+                  className={`w-7 h-7 rounded-lg shrink-0 flex items-center justify-center font-mono text-xs font-bold ${
+                    isSelected
+                      ? 'bg-brand-accent text-white'
+                      : 'bg-card-bg text-muted border border-card-border'
+                  }`}
+                >
                   {String.fromCharCode(65 + index)}
                 </span>
-                <span>{optionText}</span>
+                <span className="font-medium">{optionText}</span>
               </div>
 
               {isTimeUp && isCorrectIndex && (
-                <span className="text-emerald-400 font-extrabold text-xs">✓ Correct</span>
+                <span className="text-emerald-700 font-extrabold text-xs shrink-0 ml-2">
+                  ✓ Correct
+                </span>
               )}
             </button>
           );
@@ -183,14 +209,14 @@ export function QuestionView({
       </div>
 
       {/* Footer Status Message */}
-      <div className="text-center text-xs text-slate-400">
+      <div className="text-center text-xs text-muted pt-2 border-t border-card-border">
         {hasSubmitted && !isTimeUp && (
-          <p className="text-amber-400 font-medium animate-pulse">
+          <p className="text-brand-accent font-bold animate-pulse">
             Answer locked in! Waiting for timer to expire...
           </p>
         )}
         {isTimeUp && (
-          <p className="text-slate-300">
+          <p className="text-primary font-medium">
             Time up! Waiting for host to advance to the next question or leaderboard.
           </p>
         )}

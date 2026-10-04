@@ -4,10 +4,103 @@ import { useEffect, useState } from 'react';
 import { ref, onValue, set, update } from 'firebase/database';
 import { db } from '@/lib/firebase';
 import { SessionData, SessionStage } from '@/features/live-session/hooks/useLiveState';
-import defaultNextMonth from '@/content/monthly/next-month.json';
-import defaultDiscussionQuestions from '@/content/monthly/discussion-questions.json';
-import currentMonth from '@/content/monthly/current-month.json';
-import defaultIcebreaker from '@/content/monthly/icebreaker.json';
+
+// Current Month Details File Importer
+function CurrentMonthImporter({ sessionId }: { sessionId: string }) {
+  const [statusMsg, setStatusMsg] = useState('');
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      try {
+        const data = JSON.parse(e.target?.result as string);
+
+        await update(ref(db, `sessions/${sessionId}`), {
+          featuredCountry: data.country || data.featuredCountry || '',
+          featuredBook: data.bookTitle || data.featuredBook || '',
+          featuredAuthor: data.author || data.featuredAuthor || '',
+          meetingZoomLink: data.meetingZoomLink || data.zoomLink || '',
+        });
+
+        setStatusMsg(`Loaded "${data.bookTitle || data.featuredBook || 'book'}" into live session!`);
+      } catch (err: any) {
+        setStatusMsg(`Error parsing file: ${err.message}`);
+      }
+    };
+
+    reader.readAsText(file);
+  };
+
+  return (
+    <div className="bg-slate-900/60 border border-slate-700/60 rounded-xl p-4 space-y-2">
+      <span className="text-xs font-bold text-slate-300 uppercase tracking-wider block">
+        📚 Upload Current Month JSON
+      </span>
+      <input
+        type="file"
+        accept=".json"
+        onChange={handleFileUpload}
+        className="block w-full text-xs text-slate-400 file:mr-4 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-teal-600 file:text-white hover:file:bg-teal-500 cursor-pointer"
+      />
+      {statusMsg && (
+        <p className={`text-xs ${statusMsg.includes('Error') ? 'text-rose-400' : 'text-emerald-400'}`}>
+          {statusMsg}
+        </p>
+      )}
+    </div>
+  );
+}
+
+// Icebreaker Details File Importer
+function IcebreakerImporter({ sessionId }: { sessionId: string }) {
+  const [statusMsg, setStatusMsg] = useState('');
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      try {
+        const icebreakerData = JSON.parse(e.target?.result as string);
+
+        await update(ref(db, `sessions/${sessionId}/stageState/icebreaker`), {
+          country: icebreakerData.country || '',
+          facts: icebreakerData.facts || [],
+          status: 'VOTING',
+        });
+
+        setStatusMsg(`Successfully loaded icebreaker for ${icebreakerData.country || 'country'}!`);
+      } catch (err: any) {
+        setStatusMsg(`Error parsing file: ${err.message}`);
+      }
+    };
+
+    reader.readAsText(file);
+  };
+
+  return (
+    <div className="bg-slate-900/60 border border-slate-700/60 rounded-xl p-4 space-y-2">
+      <span className="text-xs font-bold text-slate-300 uppercase tracking-wider block">
+        🧊 Import Icebreaker JSON
+      </span>
+      <input
+        type="file"
+        accept=".json"
+        onChange={handleFileUpload}
+        className="block w-full text-xs text-slate-400 file:mr-4 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-teal-600 file:text-white hover:file:bg-teal-500 cursor-pointer"
+      />
+      {statusMsg && (
+        <p className={`text-xs ${statusMsg.includes('Error') ? 'text-rose-400' : 'text-emerald-400'}`}>
+          {statusMsg}
+        </p>
+      )}
+    </div>
+  );
+}
 
 // Discussion Questions File Importer
 function DiscussionImporter({ sessionId }: { sessionId: string }) {
@@ -249,22 +342,22 @@ function HostTriviaController({ session }: { session: SessionData }) {
           </div>
 
           <div className="flex items-center gap-2 text-xs font-bold text-slate-300">
-  <span>Timer Duration:</span>
-  <select
-    value={trivia?.timeLimitSeconds || 10}
-    onChange={async (e) => {
-      await update(ref(db, `sessions/${sessionId}/stageState/trivia`), {
-        timeLimitSeconds: Number(e.target.value),
-      });
-    }}
-    className="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-teal-400 focus:outline-none"
-  >
-    <option value={5}>5 seconds</option>
-    <option value={10}>10 seconds</option>
-    <option value={15}>15 seconds</option>
-    <option value={20}>20 seconds</option>
-  </select>
-</div>
+            <span>Timer Duration:</span>
+            <select
+              value={trivia?.timeLimitSeconds || 10}
+              onChange={async (e) => {
+                await update(ref(db, `sessions/${sessionId}/stageState/trivia`), {
+                  timeLimitSeconds: Number(e.target.value),
+                });
+              }}
+              className="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-teal-400 focus:outline-none"
+            >
+              <option value={5}>5 seconds</option>
+              <option value={10}>10 seconds</option>
+              <option value={15}>15 seconds</option>
+              <option value={20}>20 seconds</option>
+            </select>
+          </div>
 
           <div className="pt-4 border-t border-slate-700/60 space-y-3">
             <div className="flex items-center justify-between">
@@ -323,24 +416,33 @@ function HostTriviaController({ session }: { session: SessionData }) {
 }
 
 const INITIAL_SESSION_DATA: SessionData = {
-  sessionId: 'active_session',
-  featuredCountry: 'Georgia',
-  featuredBook: 'Heart Lamp',
+sessionId: 'active_session',
+  featuredCountry: '', // Empty string allows fallback check
+  featuredBook: '',
+  featuredAuthor: '',
+  meetingZoomLink: '',
   currentStage: 'LOBBY',
-  nextMonth: defaultNextMonth, // Automatically loaded from next-month.json
+    nextMonth: {
+    country: '',
+    bookTitle: '',
+    author: '',
+    meetingDate: '',
+    meetingTime: '',
+    meetingZoomLink: '',
+  },
   stageState: {
     lobby: {
       checkIns: {},
     },
-   icebreaker: {
-      country: defaultIcebreaker.country,
+    icebreaker: {
+      country: '',
       status: 'VOTING',
-      facts: defaultIcebreaker.facts, // Automatically loaded from icebreaker.json
+      facts: [],
       memberVotes: {},
     },
-     discussion: {
+    discussion: {
       activeQuestionIndex: 0,
-      questions: defaultDiscussionQuestions, // Automatically loaded from discussion-questions.json
+      questions: [],
       handQueue: [],
     },
     trivia: {
@@ -391,7 +493,6 @@ export default function AdminDashboardPage() {
     });
   };
 
-
   const setDiscussionIndex = async (index: number) => {
     await update(ref(db, `sessions/${sessionId}/stageState/discussion`), {
       activeQuestionIndex: index,
@@ -432,6 +533,12 @@ export default function AdminDashboardPage() {
           </button>
         </div>
 
+        {/* Global Importers Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <CurrentMonthImporter sessionId={sessionId} />
+          <NextMonthImporter sessionId={sessionId} />
+        </div>
+
         {/* Stage Controller */}
         <div className="bg-slate-800/70 border border-slate-700/80 rounded-2xl p-6 space-y-4 shadow-xl">
           <div className="flex items-center justify-between">
@@ -441,26 +548,26 @@ export default function AdminDashboardPage() {
             </span>
           </div>
 
-         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-  {(['LOBBY', 'ICEBREAKER', 'DISCUSSION', 'TRIVIA', 'WRAP_UP'] as const).map((stage) => {
-    const isActive = currentStage === stage;
-    const displayLabel = stage === 'WRAP_UP' ? 'WRAP-UP' : stage;
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+            {(['LOBBY', 'ICEBREAKER', 'DISCUSSION', 'TRIVIA', 'WRAP_UP'] as const).map((stage) => {
+              const isActive = currentStage === stage;
+              const displayLabel = stage === 'WRAP_UP' ? 'WRAP-UP' : stage;
 
-    return (
-      <button
-        key={stage}
-        onClick={() => updateStage(stage)}
-        className={`py-3.5 px-3 rounded-xl text-xs font-bold transition-all border ${
-          isActive
-            ? 'bg-teal-600 border-teal-500 text-white shadow-lg shadow-teal-900/40 ring-2 ring-teal-400/50'
-            : 'bg-slate-800 border-slate-700/80 text-slate-300 hover:bg-slate-750 hover:border-slate-600'
-        }`}
-      >
-        {displayLabel}
-      </button>
-    );
-  })}
-</div>
+              return (
+                <button
+                  key={stage}
+                  onClick={() => updateStage(stage)}
+                  className={`py-3.5 px-3 rounded-xl text-xs font-bold transition-all border ${
+                    isActive
+                      ? 'bg-teal-600 border-teal-500 text-white shadow-lg shadow-teal-900/40 ring-2 ring-teal-400/50'
+                      : 'bg-slate-800 border-slate-700/80 text-slate-300 hover:bg-slate-750 hover:border-slate-600'
+                  }`}
+                >
+                  {displayLabel}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* LOBBY CONTROLLER */}
@@ -548,6 +655,11 @@ export default function AdminDashboardPage() {
                 })}
               </div>
             </div>
+
+            {/* Icebreaker JSON Importer */}
+            <div className="pt-4 border-t border-slate-700/60 space-y-3">
+              <IcebreakerImporter sessionId={sessionId} />
+            </div>
           </div>
         )}
 
@@ -607,7 +719,7 @@ export default function AdminDashboardPage() {
               </div>
             </div>
 
-              {/* Discussion JSON Importer */}
+            {/* Discussion JSON Importer */}
             <div className="pt-4 border-t border-slate-700/60 space-y-3">
               <DiscussionImporter sessionId={sessionId} />
             </div>
@@ -619,62 +731,62 @@ export default function AdminDashboardPage() {
           <HostTriviaController session={session} />
         )}
 
-{/* WRAP-UP CONTROLLER */}
-{currentStage === 'WRAP_UP' && (() => {
-  const ratingsObj = session?.stageState?.wrapUp?.memberRatings || {};
-  const entries = Object.values(ratingsObj);
-  const totalSubmissions = entries.length;
+        {/* WRAP-UP CONTROLLER */}
+        {currentStage === 'WRAP_UP' && (() => {
+          const ratingsObj = session?.stageState?.wrapUp?.memberRatings || {};
+          const entries = Object.values(ratingsObj);
+          const totalSubmissions = entries.length;
 
-  // Calculate Average Star Rating
-  const averageRating = totalSubmissions > 0
-    ? (entries.reduce((acc, curr) => acc + curr.rating, 0) / totalSubmissions).toFixed(1)
-    : null;
+          // Calculate Average Star Rating
+          const averageRating = totalSubmissions > 0
+            ? (entries.reduce((acc, curr) => acc + curr.rating, 0) / totalSubmissions).toFixed(1)
+            : null;
 
-  return (
-    <div className="bg-slate-800/70 border border-slate-700/80 rounded-2xl p-6 space-y-6 shadow-xl">
-      <div className="flex items-center justify-between border-b border-slate-700/60 pb-4">
-        <div>
-          <h2 className="text-lg font-bold text-white">Wrap-Up Summary & Live Rating</h2>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Total Submissions: <strong className="text-teal-400">{totalSubmissions}</strong>
-          </p>
-        </div>
+          return (
+            <div className="bg-slate-800/70 border border-slate-700/80 rounded-2xl p-6 space-y-6 shadow-xl">
+              <div className="flex items-center justify-between border-b border-slate-700/60 pb-4">
+                <div>
+                  <h2 className="text-lg font-bold text-white">Wrap-Up Summary & Live Rating</h2>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Total Submissions: <strong className="text-teal-400">{totalSubmissions}</strong>
+                  </p>
+                </div>
 
-        {/* Live Average Badge */}
-        {averageRating && (
-          <div className="flex items-center gap-2 bg-teal-950/80 border border-teal-500/80 px-4 py-2 rounded-xl">
-            <span className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
-              Avg Rating:
-            </span>
-            <span className="text-lg font-black text-amber-400">
-              ⭐ {averageRating} <span className="text-xs font-normal text-slate-400">/ 5</span>
-            </span>
-          </div>
-        )}
-      </div>
-
-      {/* Submitted Member Ratings Breakdown */}
-      <div className="space-y-3">
-        <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider">
-          Individual Member Ratings
-        </h3>
-        {totalSubmissions > 0 ? (
-          Object.entries(ratingsObj).map(([name, entry]) => (
-            <div key={name} className="p-3 bg-slate-900/60 rounded-xl border border-slate-700/60 text-xs space-y-1">
-              <div className="flex justify-between font-bold text-teal-300">
-                <span>{name}</span>
-                <span className="text-amber-400">{'★'.repeat(entry.rating)}{'☆'.repeat(5 - entry.rating)}</span>
+                {/* Live Average Badge */}
+                {averageRating && (
+                  <div className="flex items-center gap-2 bg-teal-950/80 border border-teal-500/80 px-4 py-2 rounded-xl">
+                    <span className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                      Avg Rating:
+                    </span>
+                    <span className="text-lg font-black text-amber-400">
+                      ⭐ {averageRating} <span className="text-xs font-normal text-slate-400">/ 5</span>
+                    </span>
+                  </div>
+                )}
               </div>
-              {entry.feedback && <p className="text-slate-400 text-[11px] italic">"{entry.feedback}"</p>}
+
+              {/* Submitted Member Ratings Breakdown */}
+              <div className="space-y-3">
+                <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                  Individual Member Ratings
+                </h3>
+                {totalSubmissions > 0 ? (
+                  Object.entries(ratingsObj).map(([name, entry]) => (
+                    <div key={name} className="p-3 bg-slate-900/60 rounded-xl border border-slate-700/60 text-xs space-y-1">
+                      <div className="flex justify-between font-bold text-teal-300">
+                        <span>{name}</span>
+                        <span className="text-amber-400">{'★'.repeat(entry.rating)}{'☆'.repeat(5 - entry.rating)}</span>
+                      </div>
+                      {entry.feedback && <p className="text-slate-400 text-[11px] italic">"{entry.feedback}"</p>}
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-xs text-slate-500 italic">No reflections or ratings submitted yet.</p>
+                )}
+              </div>
             </div>
-          ))
-        ) : (
-          <p className="text-xs text-slate-500 italic">No reflections or ratings submitted yet.</p>
-        )}
-      </div>
-    </div>
-  );
-})()}
+          );
+        })()}
       </div>
     </div>
   );

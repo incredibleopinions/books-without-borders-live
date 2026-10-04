@@ -39,6 +39,9 @@ export interface SessionData {
   featuredCountry: string;
   featuredBook: string;
   featuredAuthor?: string;
+  meetingDate?: string;
+  meetingTime?: string;
+  meetingZoomLink?: string;
   currentStage: SessionStage;
   nextMonth?: NextMonthInfo;
   connectedMembers?: Record<string, any> | number;
