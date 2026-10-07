@@ -23,7 +23,11 @@ export async function POST(req: Request) {
       appSecret,
     });
 
-    return NextResponse.json({ signature });
+    // CRITICAL: Return `sdkKey` alongside `signature` so client.join() gets the key
+    return NextResponse.json({ 
+      signature,
+      sdkKey: appKey 
+    });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Failed to generate Zoom signature';
     return NextResponse.json({ error: message }, { status: 500 });
