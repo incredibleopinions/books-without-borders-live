@@ -42,6 +42,9 @@ export interface SessionData {
   meetingDate?: string;
   meetingTime?: string;
   meetingZoomLink?: string;
+  zoomMeetingId?: string;
+  zoomPasscode?: string;
+  zoomReady?: boolean;
   currentStage: SessionStage;
   nextMonth?: NextMonthInfo;
   connectedMembers?: Record<string, any> | number;

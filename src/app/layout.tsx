@@ -7,10 +7,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="theme-bookclub-warm">
-      <body
-        className="min-h-screen antialiased bg-main text-primary"
-        suppressHydrationWarning
-      >
+      <body className="min-h-screen antialiased bg-main text-primary" suppressHydrationWarning>
         {children}
       </body>
     </html>

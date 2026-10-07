@@ -4,9 +4,21 @@ import { useEffect, useState } from 'react';
 import { ref, onValue, set, update } from 'firebase/database';
 import { db } from '@/lib/firebase';
 import { SessionData, SessionStage } from '@/features/live-session/hooks/useLiveState';
+import { extractZoomDetailsFromSession } from '@/features/live-session/lib/extractZoomDetails';
 
 // Current Month Details File Importer
-function CurrentMonthImporter({ sessionId }: { sessionId: string }) {
+function asSessionText(value: unknown): string {
+  if (value == null) return '';
+  return String(value).trim();
+}
+
+function CurrentMonthImporter({
+  sessionId,
+  session,
+}: {
+  sessionId: string;
+  session: SessionData | null;
+}) {
   const [statusMsg, setStatusMsg] = useState('');
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -16,18 +28,39 @@ function CurrentMonthImporter({ sessionId }: { sessionId: string }) {
     const reader = new FileReader();
     reader.onload = async (e) => {
       try {
-        const data = JSON.parse(e.target?.result as string);
-
-        await update(ref(db, `sessions/${sessionId}`), {
-          featuredCountry: data.country || data.featuredCountry || '',
-          featuredBook: data.bookTitle || data.featuredBook || '',
-          featuredAuthor: data.author || data.featuredAuthor || '',
-          meetingZoomLink: data.meetingZoomLink || data.zoomLink || '',
+        const data = JSON.parse(String(e.target?.result ?? ''));
+        const bookTitle = asSessionText(data.bookTitle || data.featuredBook);
+        const meetingZoomLink = asSessionText(data.meetingZoomLink || data.zoomLink);
+        const zoom = extractZoomDetailsFromSession({
+          meetingZoomLink,
+          zoomMeetingId: asSessionText(data.zoomMeetingId),
+          zoomPasscode: asSessionText(data.zoomPasscode),
         });
 
-        setStatusMsg(`Loaded "${data.bookTitle || data.featuredBook || 'book'}" into live session!`);
-      } catch (err: any) {
-        setStatusMsg(`Error parsing file: ${err.message}`);
+        if (!bookTitle && !zoom.meetingId && !meetingZoomLink) {
+          throw new Error('File is missing the book title and Zoom meeting fields.');
+        }
+
+        await update(ref(db, `sessions/${sessionId}`), {
+          featuredCountry: asSessionText(data.country || data.featuredCountry),
+          featuredBook: bookTitle,
+          featuredAuthor: asSessionText(data.author || data.featuredAuthor),
+          meetingDate: asSessionText(data.meetingDate),
+          meetingTime: asSessionText(data.meetingTime),
+          meetingZoomLink,
+          zoomMeetingId: zoom.meetingId,
+          zoomPasscode: zoom.passcode,
+          zoomReady: Boolean(zoom.meetingId),
+        });
+
+        setStatusMsg(
+          `Loaded "${bookTitle || 'book'}" with meeting ${zoom.meetingId || 'id missing'} and passcode ${
+            zoom.passcode || 'missing'
+          }.`
+        );
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Could not save the current month file.';
+        setStatusMsg(`Error parsing file: ${message}`);
       }
     };
 
@@ -50,6 +83,12 @@ function CurrentMonthImporter({ sessionId }: { sessionId: string }) {
           {statusMsg}
         </p>
       )}
+      <p className="text-[11px] text-slate-400 leading-relaxed">
+        Live session Zoom:{' '}
+        {session?.zoomMeetingId
+          ? `${session.zoomMeetingId}${session.zoomPasscode ? ` · passcode ${session.zoomPasscode}` : ' · passcode missing'}`
+          : 'not loaded yet'}
+      </p>
     </div>
   );
 }
@@ -421,6 +460,10 @@ sessionId: 'active_session',
   featuredBook: '',
   featuredAuthor: '',
   meetingZoomLink: '',
+  meetingDate: '',
+  meetingTime: '',
+  zoomMeetingId: '',
+  zoomPasscode: '',
   currentStage: 'LOBBY',
     nextMonth: {
     country: '',
@@ -534,7 +577,7 @@ export default function AdminDashboardPage() {
 
         {/* Global Importers Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <CurrentMonthImporter sessionId={sessionId} />
+          <CurrentMonthImporter sessionId={sessionId} session={session} />
           <NextMonthImporter sessionId={sessionId} />
         </div>
 

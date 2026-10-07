@@ -92,3 +92,36 @@ html, body {
   color: var(--text-primary);
   min-height: 100vh;
 }
+
+/* Zoom Embedded SDK dark theme overrides */
+#zmmtg-root,
+#meetingSDKElement,
+.meeting-client,
+.meeting-client-inner {
+  width: 100% !important;
+  height: 100% !important;
+  background-color: #000000 !important;
+}
+
+/* Force dark background for inner Zoom container elements */
+#zmmtg-root iframe,
+.zoom-wc-container {
+  background-color: #000000 !important;
+  border-radius: 1rem;
+}
+
+/* Hide Zoom's internal leave button so it doesn't trigger refused-to-connect redirects */
+.footer-button__button-balance--leave,
+.footer-button__leave-btn,
+button[aria-label="Leave"],
+button[aria-label="Leave Meeting"] {
+  display: none !important;
+}
+
+/* Hide native Zoom SDK Leave button to prevent app.zoom.us frame navigation */
+#zmmtg-root .footer-button__button-balance--leave,
+#zmmtg-root .footer-button__leave-btn,
+#zmmtg-root button[aria-label="Leave"],
+#zmmtg-root button[aria-label="Leave Meeting"] {
+  display: none !important;
+}
