@@ -1,13 +1,18 @@
 import { NextResponse } from 'next/server';
 import { createMeetingSdkJwt } from '@/features/live-session/lib/createMeetingSdkJwt';
+import { selectZoomCredentials } from '@/features/live-session/lib/selectZoomCredentials';
 
 export async function POST(req: Request) {
   const body = await req.json();
-  const appKey = process.env.ZOOM_SDK_KEY?.trim();
-  const appSecret = process.env.ZOOM_SDK_SECRET?.trim();
+  const { appKey, appSecret, source } = selectZoomCredentials();
 
   if (!appKey || !appSecret) {
-    return NextResponse.json({ error: 'Zoom SDK credentials are missing on the server.' }, { status: 500 });
+    const keyName = source === 'production' ? 'ZOOM_SDK_KEY_PROD' : 'ZOOM_SDK_KEY_DEV';
+    const secretName = source === 'production' ? 'ZOOM_SDK_SECRET_PROD' : 'ZOOM_SDK_SECRET_DEV';
+    return NextResponse.json(
+      { error: `Zoom SDK credentials are missing. Set ${keyName} and ${secretName} on the server.` },
+      { status: 500 }
+    );
   }
 
   try {
