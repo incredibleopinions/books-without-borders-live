@@ -3,19 +3,29 @@ export function selectZoomCredentials(env: NodeJS.ProcessEnv = process.env): {
   appSecret: string;
   source: 'production' | 'development';
 } {
-  const useProd = env.VERCEL_ENV ? env.VERCEL_ENV === 'production' : env.NODE_ENV === 'production';
-  
-  // Try loading primary keys based on environment
-  let appKey = (useProd ? env.ZOOM_SDK_KEY_PROD : env.ZOOM_SDK_KEY_DEV)?.trim() ?? '';
-  let appSecret = (useProd ? env.ZOOM_SDK_SECRET_PROD : env.ZOOM_SDK_SECRET_DEV)?.trim() ?? '';
-  let source: 'production' | 'development' = useProd ? 'production' : 'development';
+  // Check all potential keys
+  const appKey = (
+    env.ZOOM_SDK_KEY_PROD || 
+    env.ZOOM_SDK_KEY_DEV || 
+    env.ZOOM_SDK_KEY
+  )?.trim() ?? '';
 
-  // Fallback: If dev keys aren't defined (e.g., Preview deployment), fall back to prod keys
-  if (!appKey || !appSecret) {
-    appKey = (env.ZOOM_SDK_KEY_PROD || env.ZOOM_SDK_KEY_DEV || env.ZOOM_SDK_KEY)?.trim() ?? '';
-    appSecret = (env.ZOOM_SDK_SECRET_PROD || env.ZOOM_SDK_SECRET_DEV || env.ZOOM_SDK_SECRET)?.trim() ?? '';
-    source = 'production';
-  }
+  const appSecret = (
+    env.ZOOM_SDK_SECRET_PROD || 
+    env.ZOOM_SDK_SECRET_DEV || 
+    env.ZOOM_SDK_SECRET
+  )?.trim() ?? '';
+
+  const source = env.VERCEL_ENV === 'production' ? 'production' : 'development';
+
+  // Server-side logging for Vercel runtime inspection
+  console.log('[Zoom Credentials Debug]', {
+    VERCEL_ENV: env.VERCEL_ENV,
+    NODE_ENV: env.NODE_ENV,
+    hasKey: Boolean(appKey),
+    hasSecret: Boolean(appSecret),
+    keyLength: appKey.length,
+  });
 
   return { appKey, appSecret, source };
 }
