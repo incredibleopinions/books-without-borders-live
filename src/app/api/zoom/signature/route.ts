@@ -7,32 +7,31 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
 
-    // Directly evaluate environment variables
-    const appKey = (
-      process.env.ZOOM_SDK_KEY_PROD ||
-      process.env.ZOOM_SDK_KEY_DEV ||
-      process.env.ZOOM_SDK_KEY ||
-      process.env.NEXT_PUBLIC_ZOOM_SDK_KEY
-    )?.trim();
+    // Direct environment variable check
+    const prodKey = process.env.ZOOM_SDK_KEY_PROD;
+    const prodSecret = process.env.ZOOM_SDK_SECRET_PROD;
+    const devKey = process.env.ZOOM_SDK_KEY_DEV;
+    const devSecret = process.env.ZOOM_SDK_SECRET_DEV;
+    const genericKey = process.env.ZOOM_SDK_KEY;
+    const genericSecret = process.env.ZOOM_SDK_SECRET;
 
-    const appSecret = (
-      process.env.ZOOM_SDK_SECRET_PROD ||
-      process.env.ZOOM_SDK_SECRET_DEV ||
-      process.env.ZOOM_SDK_SECRET
-    )?.trim();
+    const appKey = (prodKey || devKey || genericKey)?.trim();
+    const appSecret = (prodSecret || devSecret || genericSecret)?.trim();
 
     if (!appKey || !appSecret) {
-      console.error('[Zoom Signature API Error] Missing credentials:', {
-        hasKey: Boolean(appKey),
-        hasSecret: Boolean(appSecret),
-        VERCEL_ENV: process.env.VERCEL_ENV,
-        NODE_ENV: process.env.NODE_ENV,
-      });
-
       return NextResponse.json(
         {
-          error:
-            'Zoom SDK credentials are missing. Set ZOOM_SDK_KEY_PROD and ZOOM_SDK_SECRET_PROD on the server.',
+          error: 'Missing Zoom credentials on Vercel runtime.',
+          debug: {
+            VERCEL_ENV: process.env.VERCEL_ENV || 'undefined',
+            NODE_ENV: process.env.NODE_ENV || 'undefined',
+            hasProdKey: Boolean(prodKey),
+            hasProdSecret: Boolean(prodSecret),
+            hasDevKey: Boolean(devKey),
+            hasDevSecret: Boolean(devSecret),
+            hasGenericKey: Boolean(genericKey),
+            hasGenericSecret: Boolean(genericSecret),
+          },
         },
         { status: 500 }
       );
@@ -45,12 +44,15 @@ export async function POST(req: Request) {
       appSecret,
     });
 
-    return NextResponse.json({
-      signature,
-      sdkKey: appKey,
-    });
+    return NextResponse.json({ signature, sdkKey: appKey });
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Failed to generate Zoom signature';
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json(
+      {
+        error: 'Exception thrown inside signature endpoint',
+        details: err instanceof Error ? err.message : String(err),
+        stack: err instanceof Error ? err.stack : null,
+      },
+      { status: 500 }
+    );
   }
 }
