@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import { createMeetingSdkJwt } from '@/features/live-session/lib/createMeetingSdkJwt';
 import { selectZoomCredentials } from '@/features/live-session/lib/selectZoomCredentials';
 
+// Force Next.js to evaluate this API route dynamically on every request
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: Request) {
   const body = await req.json();
   const { appKey, appSecret, source } = selectZoomCredentials();
@@ -23,7 +26,6 @@ export async function POST(req: Request) {
       appSecret,
     });
 
-    // CRITICAL: Return `sdkKey` alongside `signature` so client.join() gets the key
     return NextResponse.json({ 
       signature,
       sdkKey: appKey 
