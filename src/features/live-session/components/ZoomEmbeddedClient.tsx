@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import type { SuspensionViewType, VideoOptions } from '@zoom/meetingsdk/embedded';
 
 function isZoomListKeyWarning(args: unknown[]): boolean {
   const message = args
@@ -45,10 +46,10 @@ async function waitForPanelSize(container: HTMLElement) {
   return measurePanel(container);
 }
 
-function videoOptionsFor(size: { width: number; height: number }) {
+function videoOptionsFor(size: { width: number; height: number }): VideoOptions {
   return {
     isResizable: false,
-    defaultViewType: 'gallery' as const,
+    defaultViewType: 'gallery' as SuspensionViewType,
     viewSizes: {
       default: size,
       ribbon: size,

@@ -109,20 +109,3 @@ html, body {
   background-color: #000000 !important;
   border-radius: 1rem;
 }
-
-/* Hide Zoom's internal leave button so it doesn't trigger refused-to-connect redirects */
-.footer-button__button-balance--leave,
-.footer-button__leave-btn,
-button[aria-label="Leave"],
-button[aria-label="Leave Meeting"],
-button[title="Leave"] {
-  display: none !important;
-}
-
-/* Hide native Zoom SDK Leave button to prevent app.zoom.us frame navigation */
-#zmmtg-root .footer-button__button-balance--leave,
-#zmmtg-root .footer-button__leave-btn,
-#zmmtg-root button[aria-label="Leave"],
-#zmmtg-root button[aria-label="Leave Meeting"] {
-  display: none !important;
-}
