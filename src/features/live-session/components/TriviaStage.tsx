@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ref, update, set } from 'firebase/database';
+import { onValue, ref, update, set } from 'firebase/database';
 import { db } from '@/lib/firebase';
 import { SessionData } from '@/features/live-session/hooks/useLiveState';
 
@@ -18,7 +18,12 @@ export function TriviaStage({ session, memberName }: TriviaStageProps) {
   const currentQuestion = questions[currentIndex];
 
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
-  const [timeLeft, setTimeLeft] = useState<number>(trivia?.timeLimitSeconds || 20);
+  const [serverOffset, setServerOffset] = useState(0);
+  const [nowMs, setNowMs] = useState(() => Date.now());
+
+  const timeLimitSeconds = trivia?.timeLimitSeconds || 20;
+  const questionStartTime = trivia?.questionStartTime;
+  const hasStartTime = typeof questionStartTime === 'number';
 
   // Register active participant presence in Firebase
   useEffect(() => {
@@ -35,27 +40,35 @@ export function TriviaStage({ session, memberName }: TriviaStageProps) {
     setSelectedOption(null);
   }, [currentIndex]);
 
-  // Timer Countdown Logic (Only runs when status === 'IN_PROGRESS')
+  // Shared clock so every device counts down from the same server timestamp
   useEffect(() => {
-    if (status !== 'IN_PROGRESS' || !trivia?.questionStartTime) return;
+    const offsetRef = ref(db, '.info/serverTimeOffset');
+    return onValue(offsetRef, (snapshot) => {
+      const value = snapshot.val();
+      setServerOffset(typeof value === 'number' ? value : 0);
+    });
+  }, []);
 
-    const interval = setInterval(() => {
-      const elapsed = Math.floor((Date.now() - trivia.questionStartTime!) / 1000);
-      const remaining = Math.max(0, (trivia.timeLimitSeconds || 20) - elapsed);
-      setTimeLeft(remaining);
+  // Tick immediately when a question starts, and keep the displayed seconds in sync
+  useEffect(() => {
+    if (status !== 'IN_PROGRESS') return;
 
-      if (remaining === 0) {
-        clearInterval(interval);
-      }
-    }, 200);
-
+    setNowMs(Date.now());
+    const interval = setInterval(() => setNowMs(Date.now()), 200);
     return () => clearInterval(interval);
-  }, [status, trivia?.questionStartTime, trivia?.timeLimitSeconds]);
+  }, [status, currentIndex, questionStartTime]);
+
+  const serverNow = nowMs + serverOffset;
+  const timeLeft =
+    status === 'IN_PROGRESS' && hasStartTime
+      ? Math.max(0, timeLimitSeconds - Math.floor((serverNow - questionStartTime) / 1000))
+      : timeLimitSeconds;
+  const canAnswer = status === 'IN_PROGRESS' && timeLeft > 0;
 
   // Submit Answer
   const handleSelectOption = async (optionIdx: number) => {
     // Only guard against time running out or the question not being in progress
-    if (timeLeft === 0 || status !== 'IN_PROGRESS') return;
+    if (!canAnswer) return;
 
     const previousOption = selectedOption; // Track previous pick if changing answer
     setSelectedOption(optionIdx);
@@ -83,23 +96,26 @@ export function TriviaStage({ session, memberName }: TriviaStageProps) {
       }
     );
 
-    // 2. Adjust running score total accordingly
+    // 2. Adjust running score total accordingly, including 0 so every player is ranked
     const currentTotalScore = trivia?.scores?.[memberName] || 0;
     const netScoreChange = speedBonus - previousScoreAwarded;
 
-    if (netScoreChange !== 0) {
-      await update(
-        ref(db, `sessions/${session.sessionId}/stageState/trivia/scores`),
-        {
-          [memberName]: Math.max(0, currentTotalScore + netScoreChange),
-        }
-      );
-    }
+    await update(
+      ref(db, `sessions/${session.sessionId}/stageState/trivia/scores`),
+      {
+        [memberName]: Math.max(0, currentTotalScore + netScoreChange),
+      }
+    );
   };
 
-  const sortedLeaderboard = Object.entries(trivia?.scores || {})
-    .map(([name, score]) => ({ name, score }))
-    .sort((a, b) => b.score - a.score);
+  const scoreMap = trivia?.scores || {};
+  const leaderboardNames = new Set<string>([
+    ...Object.keys(trivia?.participants || {}),
+    ...Object.keys(scoreMap),
+  ]);
+  const sortedLeaderboard = Array.from(leaderboardNames)
+    .map((name) => ({ name, score: Number(scoreMap[name]) || 0 }))
+    .sort((a, b) => b.score - a.score || a.name.localeCompare(b.name));
 
   if (status === 'IDLE' || questions.length === 0) {
     return (
@@ -177,7 +193,7 @@ export function TriviaStage({ session, memberName }: TriviaStageProps) {
             style={{
               width:
                 status === 'IN_PROGRESS'
-                  ? `${(timeLeft / (trivia?.timeLimitSeconds || 20)) * 100}%`
+                  ? `${(timeLeft / timeLimitSeconds) * 100}%`
                   : '100%',
             }}
           />
@@ -223,10 +239,10 @@ export function TriviaStage({ session, memberName }: TriviaStageProps) {
             return (
               <button
                 key={idx}
-                disabled={timeLeft === 0 || isRevealed}
+                disabled={!canAnswer || isRevealed}
                 onClick={() => handleSelectOption(idx)}
                 className={`p-4 rounded-xl text-left border text-sm font-medium transition-all flex items-center gap-2 ${
-                  timeLeft === 0 || isRevealed ? 'cursor-not-allowed' : 'cursor-pointer'
+                  !canAnswer || isRevealed ? 'cursor-not-allowed' : 'cursor-pointer'
                 } ${btnStyle}`}
               >
                 <span className="w-6 shrink-0 text-muted font-mono font-bold">

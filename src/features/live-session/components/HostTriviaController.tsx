@@ -1,6 +1,6 @@
 'use client';
 
-import { ref, update } from 'firebase/database';
+import { ref, serverTimestamp, update } from 'firebase/database';
 import { db } from '@/lib/firebase';
 import { SessionData } from '@/features/live-session/hooks/useLiveState';
 
@@ -14,7 +14,7 @@ export function HostTriviaController({ session }: { session: SessionData }) {
   const startQuestionTimer = async () => {
     await update(ref(db, `sessions/${sessionId}/stageState/trivia`), {
       status: 'IN_PROGRESS',
-      questionStartTime: Date.now(),
+      questionStartTime: serverTimestamp(),
     });
   };
 
@@ -29,10 +29,12 @@ export function HostTriviaController({ session }: { session: SessionData }) {
       await update(ref(db, `sessions/${sessionId}/stageState/trivia`), {
         currentQuestionIndex: currentIndex + 1,
         status: 'READY',
+        questionStartTime: null,
       });
     } else {
       await update(ref(db, `sessions/${sessionId}/stageState/trivia`), {
         status: 'COMPLETED',
+        questionStartTime: null,
       });
     }
   };

@@ -1,7 +1,7 @@
 'use client';
 export const dynamic = 'force-dynamic';
 import { useEffect, useState } from 'react';
-import { ref, onValue, set, update } from 'firebase/database';
+import { ref, onValue, set, update, serverTimestamp } from 'firebase/database';
 import { db } from '@/lib/firebase';
 import { SessionData, SessionStage } from '@/features/live-session/hooks/useLiveState';
 import { extractZoomDetailsFromSession } from '@/features/live-session/lib/extractZoomDetails';
@@ -309,7 +309,7 @@ function HostTriviaController({ session }: { session: SessionData }) {
   const startQuestionTimer = async () => {
     await update(ref(db, `sessions/${sessionId}/stageState/trivia`), {
       status: 'IN_PROGRESS',
-      questionStartTime: Date.now(),
+      questionStartTime: serverTimestamp(),
     });
   };
 
@@ -324,10 +324,12 @@ function HostTriviaController({ session }: { session: SessionData }) {
       await update(ref(db, `sessions/${sessionId}/stageState/trivia`), {
         currentQuestionIndex: currentIndex + 1,
         status: 'READY',
+        questionStartTime: null,
       });
     } else {
       await update(ref(db, `sessions/${sessionId}/stageState/trivia`), {
         status: 'COMPLETED',
+        questionStartTime: null,
       });
     }
   };

@@ -114,7 +114,8 @@ html, body {
 .footer-button__button-balance--leave,
 .footer-button__leave-btn,
 button[aria-label="Leave"],
-button[aria-label="Leave Meeting"] {
+button[aria-label="Leave Meeting"],
+button[title="Leave"] {
   display: none !important;
 }
 
